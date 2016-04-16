@@ -1,0 +1,132 @@
+---
+title: <span style="color:crimson">*Twitter*</span>
+author: "Author: Bareket Karif"
+date: "Date: 11 באפריל 2016"
+output: html_document
+---
+
+___ 
+
+```{r set-options, echo=FALSE, cache=FALSE}
+options(width = 200)
+```
+
+### <span style="color:darkorange">*Date Description:*</span>  
+in this part I decided to look for twitts which include the words "read book" - I will use with twitteR.  
+  
+  
+___
+
+### <span style="color:darkorange">*Data Example - First data record:*</span>  
+```{r include= TRUE, echo=FALSE, warning=FALSE}
+# Getting data from Twitter API
+
+require(twitteR)
+#require(jsonlite)
+library(wordcloud)
+require(tm)
+
+consumer_key <- 'eoSG1kjNRB92J7QIiHN90NKPP'
+consumer_secret <- 'pKdUaUnA7q40ut8ggwMcI7lazYJwlAiFcQOjAZbaiBQbwwAybj'
+access_token <- '719470966779285504-pDCL4vnTJnay1Cwg1qXEuAwfzEwxHsL'
+access_secret <- 'OwUCdiuOpxIFjwCh7vjmAUbPvm6iMjzoAPssn1v7hNqxd'
+
+sig <- twitteR::setup_twitter_oauth(consumer_key,consumer_secret,access_token,access_secret)
+
+file_book<-"book.R"
+if(!file.exists(file_book)){
+  book_tmp <- searchTwitter("#read books", n = 500)
+  save(book_tmp, file=file_book, compress=TRUE)
+} else
+    load(file_book)
+
+head(book_tmp)
+
+# Get the Date
+dateAPI <- date()
+dateAPI
+
+first_data_record <- twListToDF(book_tmp)
+```
+  
+  
+___
+  
+### <span style="color:darkorange">*Analysis of the data by various criteria*</span>  
+
+#### The graph describe the **"wordCloud"** of the most common words
+```{r twitteR, echo=FALSE, include= TRUE, warning=FALSE}
+# get tweets with relevant data
+Booktweets <- searchTwitter('#read books', n = 500, lang = 'en', resultType = "recent")
+
+#save text
+Book_text <- sapply(Booktweets, function(x) x$getText())
+
+#create corpus
+Book_text <- Corpus(VectorSource(Book_text))
+
+#clean up
+Book_text_corpus <- tm_map(Book_text, removePunctuation)
+Book_text_corpus <- tm_map(Book_text_corpus, removeWords, stopwords("english"))
+Book_text_corpus <- tm_map(Book_text_corpus, removeNumbers)
+Book_text_corpus <- tm_map(Book_text_corpus, stripWhitespace)
+
+#making a wordcloud
+wordcloud(Book_text_corpus, random.order = F, max.words = 85, scale = c(5, 0.9), colors = brewer.pal(8, "Dark2"))
+```
+
+This graph shows the most common words in the wordCloud of "read book" is: book, read, the, this, books, best, now, bookworm, buy, kindle, amazon.  
+  
+  
+___  
+
+---
+#### The graph describe how many twitts from the twitts are **retwitted**
+
+```{r, echo=FALSE, include= TRUE, warning=FALSE}
+# Pie Chart from data frame with Appended Sample Sizes
+scraping_tweets <- twListToDF(Booktweets)
+retweetTmp <- table(scraping_tweets$isRetweet)
+boolean<-c('No','Yes')
+lbls <- paste(boolean, "\n", retweetTmp, sep="")
+pie(retweetTmp, labels = lbls, main="retwitted or not?",col=c('steelblue','violet'))  
+```
+
+
+This graph shows the distribution of the original tweets and repeated almost the same.
+This suggests that when there is a tweet about a great story that many people connect to it, the above tweet will be published again and again.  
+  
+  
+  
+___  
+  
+#### The graph describe the count of **screenName** in the twitts
+
+```{r, echo=FALSE, include= TRUE, warning=FALSE}
+# Define the cars vector with 5 values
+count <- table(scraping_tweets$screenName)
+
+# Graph cars using blue points overlayed by a line 
+plot(count , type="o", col="steelblue")
+
+# Create a title with a red, bold/italic font
+title(main="count of screenName in the twitts", col.main="black", font.main=4)
+```
+
+
+This graph show that the most common screenName is **chicklitplus** - it's contains book reviews authors interviews etc'.  
+  
+  
+  
+  
+___
+  
+  
+### <span style="color:darkorange">*Summary of Conclusions and Recommendations for Further Research*</span>  
+
+In conclusion, this report shows that the private lenders have common attributes, such as retwitted about books.  
+  
+  
+My recommendation for further research, is to use the information collected in this report, and examine the likelihood that any twitts about a specific book twitts later on other books by the same author. 
+
+
